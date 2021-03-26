@@ -10,9 +10,10 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,12 +27,11 @@ import com.recruitee.integration.model.RecrutieeResponse;
 @RequestMapping("/integration")
 public class IntegrationController {
 	
-    @GetMapping("/api")
+    @PostMapping("/api")
     public CompletableFuture<String> integrationByRecrutiee(@RequestBody RecrutieeResponse recrutieeResponse) throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
         
         //Important
         Payload payload = recrutieeResponse.payload;
-        String campaginDOJ = payload.details.toStage.name;
         Map<String, String> campaginMap = new HashMap<String, String>()
         {{
              put("Ideas2IT: Immediate Joiners", "cam_uvYa6TGqt3JSRbyPs");
@@ -45,6 +45,8 @@ public class IntegrationController {
     	   String auth =  ":f0777b800f62ebaf6e57b03d8ebb1887";
     	   byte[] encodedAuth = Base64.encodeBase64(auth.getBytes("UTF-8"));
     	   String authHeaderValue = "Basic " + new String(encodedAuth);
+      if(Objects.nonNull(payload)) {
+    	   String campaginDOJ = payload.details.toStage.name;
     	   String email = payload.getCandidate().emails.get(0);
         
       if(campaginMap.containsKey(campaginDOJ)) {
@@ -98,5 +100,8 @@ public class IntegrationController {
     			   .thenApply(HttpResponse::body);	   
        }
        return null;
+      }
+	return null;
+      
   }
 }
