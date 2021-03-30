@@ -24,43 +24,43 @@ import com.recruitee.integration.model.Payload;
 import com.recruitee.integration.model.RecrutieeResponse;
 
 @RestController
-@RequestMapping("/integration")
+@RequestMapping("/integration/api")
 public class IntegrationController {
 	
-    @PostMapping("/api")
+    @PostMapping("/recruitee")
     public CompletableFuture<String> integrationByRecrutiee(@RequestBody RecrutieeResponse recrutieeResponse) throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
         
-        //Important
+        //Basics
         Payload payload = recrutieeResponse.payload;
         Map<String, String> campaginMap = new HashMap<String, String>()
         {{
-             put("Ideas2IT: Immediate Joiners", "cam_uvYa6TGqt3JSRbyPs");
              put("Ideas2IT: DOJ in 1 month", "cam_Ko8yJWBrtLgqeFEod");
              put("Ideas2IT: DOJ in 2 month", "cam_C6TEDMeZMGPYxzBgk");
              put("Ideas2IT: DOJ in 3 month", "cam_qyJDT27AGJThBe2ME");
-             put("Ideas2IT: DOJ in 15 days", "cam_Ko8yJWBrtLgqeFEod");
+             put("Ideas2IT: DOJ in 15 days", "cam_uvYa6TGqt3JSRbyPs");
         }};
         
     	   //For Basic Authentication
     	   String auth =  ":f0777b800f62ebaf6e57b03d8ebb1887";
     	   byte[] encodedAuth = Base64.encodeBase64(auth.getBytes("UTF-8"));
     	   String authHeaderValue = "Basic " + new String(encodedAuth);
+    	   //Lemlist Integration
       if(Objects.nonNull(payload)) {
     	   String campaginDOJ = payload.details.toStage.name;
     	   String email = payload.getCandidate().emails.get(0);
         
-      if(campaginMap.containsKey(campaginDOJ)) {
+        if(campaginMap.containsKey(campaginDOJ)) {
     	   //API url formation
     	   String url = "https://api.lemlist.com/api/campaigns/"+campaginMap.get(payload.details.toStage.name)+"/leads/"+ email;
     	   URI uri = new URI(url);       
     	   ObjectMapper objectMapper = new ObjectMapper();
     	   //RequestBody
-    	   Map<String,String>map=new HashMap<>();
-    	   map.put("firstName", payload.getCandidate().name);
-    	   map.put("companyName", payload.getCompany().name);
+    	   Map<String,String>requestMap=new HashMap<>();
+    	   requestMap.put("firstName", payload.getCandidate().name);
+    	   requestMap.put("companyName", payload.getCompany().name);
     	   String requestBody = objectMapper
               .writerWithDefaultPrettyPrinter()
-              .writeValueAsString(map);
+              .writeValueAsString(requestMap);
 
     	   // Create HTTP request object
     	   HttpRequest request = HttpRequest.newBuilder()
@@ -75,17 +75,18 @@ public class IntegrationController {
     			   .sendAsync(request, BodyHandlers.ofString())
     			   .thenApply(HttpResponse::body);		   	   
       }
-      if(campaginDOJ.equals("Hired")) {
+      //IAssistant Integration
+        if(campaginDOJ.equals("Hired")) {
     	   String url = "https://timesheet.ideas2it.com/api/on-boarding/recruitee";
     	   URI uri = new URI(url);       
     	   ObjectMapper objectMapper = new ObjectMapper();
     	   //RequestBody
-    	   Map<String,String>map=new HashMap<>();
-    	   map.put("name", payload.getCandidate().name);
-    	   map.put("email", email);
+    	   Map<String,String>requestMap=new HashMap<>();
+    	   requestMap.put("name", payload.getCandidate().name);
+    	   requestMap.put("email", email);
     	   String requestBody = objectMapper
               .writerWithDefaultPrettyPrinter()
-              .writeValueAsString(map);
+              .writeValueAsString(requestMap);
 
     	   // Create HTTP request object
     	   HttpRequest request = HttpRequest.newBuilder()
@@ -101,7 +102,6 @@ public class IntegrationController {
        }
        return null;
       }
-	return null;
-      
+	return null;      
   }
 }
