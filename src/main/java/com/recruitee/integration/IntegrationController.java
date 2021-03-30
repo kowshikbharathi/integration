@@ -46,10 +46,10 @@ public class IntegrationController {
     	   String authHeaderValue = "Basic " + new String(encodedAuth);
     	   //Lemlist Integration
       if(Objects.nonNull(payload)) {
-    	   String campaginDOJ = payload.details.toStage.name;
+    	   String pipeLine = payload.details.toStage.name;
     	   String email = payload.getCandidate().emails.get(0);
         
-        if(campaginMap.containsKey(campaginDOJ)) {
+        if(campaginMap.containsKey(pipeLine)) {
     	   //API url formation
     	   String url = "https://api.lemlist.com/api/campaigns/"+campaginMap.get(payload.details.toStage.name)+"/leads/"+ email;
     	   URI uri = new URI(url);       
@@ -76,7 +76,7 @@ public class IntegrationController {
     			   .thenApply(HttpResponse::body);		   	   
       }
       //IAssistant Integration
-        if(campaginDOJ.equals("Hired")) {
+        if(pipeLine.equals("Hired")) {
     	   String url = "https://timesheet.ideas2it.com/api/on-boarding/recruitee";
     	   URI uri = new URI(url);       
     	   ObjectMapper objectMapper = new ObjectMapper();
