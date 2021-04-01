@@ -45,7 +45,7 @@ public class IntegrationController {
     	   byte[] encodedAuth = Base64.encodeBase64(auth.getBytes("UTF-8"));
     	   String authHeaderValue = "Basic " + new String(encodedAuth);
     	   //Lemlist Integration
-      if(Objects.nonNull(payload)) {
+      if(Objects.nonNull(payload) && !payload.getOffer().slug.contains("Element5")) {
     	   String pipeLine = payload.details.toStage.name;
     	   String email = payload.getCandidate().emails.get(0);
         
