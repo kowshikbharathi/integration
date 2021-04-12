@@ -51,16 +51,19 @@ public class RecruiteeIntegrationServiceImpl implements RecruiteeIntegrationServ
  			String jobTitle = propertyList.get(propertyList.size()-2).replace(" title=", "");
  			message = "Candidate "+ candidateName +" applied for the job " + jobTitle+ dot;
  			System.out.println(message);
+ 			//call google notification method
  		    break; 
  		case "candidate_assigned":
  			message = "New job/talent pool " +  payload.getOffer().title + " is added to the candidate "+ candidateName + dot ;
  			System.out.println(message);
+ 			//call google notification method
  		    break;
  		case "candidate_moved":
  			String fromStage = payload.details.fromStage.name;
  			String toStage = payload.details.toStage.name;
  			message = "Candidate of position " + payload.getOffer().title + " moved from " + fromStage + " to " + toStage + dot ;
  			System.out.println(message);
+ 			//call google notification method
  			initiateExternalIntegration(payload);
  		    break;
  	    default:
@@ -103,7 +106,7 @@ public class RecruiteeIntegrationServiceImpl implements RecruiteeIntegrationServ
 	        	  ObjectMapper objectMapper = new ObjectMapper();
 	        	  //RequestBody
 	        	  Map<String,String>requestMap=new HashMap<>();
-	        	  requestMap.put("firstName", payload.getCandidate().name);
+	        	  requestMap.put("firstName", payload.getCandidate().name);    
 	        	  requestMap.put("companyName", payload.getCompany().name);
 	        	  String requestBody = objectMapper
 	        			  .writerWithDefaultPrettyPrinter()
