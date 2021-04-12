@@ -9,17 +9,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recruitee.integration.model.Payload;
@@ -34,37 +29,19 @@ import com.recruitee.integration.model.RecrutieeResponse;
 public class RecruiteeIntegrationServiceImpl implements RecruiteeIntegrationService {
 	
 	@Override
-    public void  recruiteeToExternalIntegration(RecrutieeResponse recrutieeResponse) throws JsonProcessingException, UnsupportedEncodingException, URISyntaxException  {
+    public void  recruiteeToExternalIntegration(RecrutieeResponse recrutieeResponse) {
         
         //Basics
 		String eventType = recrutieeResponse.eventType;
         Payload payload = recrutieeResponse.payload;
-        //send notification
      if(Objects.nonNull(eventType)) {
-    	String candidateName = payload.getCandidate().name;
- 		String dot = ".";
- 		String message = "";
  		switch(eventType) {
- 		case "new_candidate":
- 			String additionalProperties =  payload.getAdditionalProperties().get("offers").toString();
- 			List<String> propertyList = Arrays.asList(additionalProperties.split(",")).stream().collect(Collectors.toList());
- 			String jobTitle = propertyList.get(propertyList.size()-2).replace(" title=", "");
- 			message = "Candidate "+ candidateName +" applied for the job " + jobTitle+ dot;
- 			System.out.println(message);
- 			//call google notification method
- 		    break; 
- 		case "candidate_assigned":
- 			message = "New job/talent pool " +  payload.getOffer().title + " is added to the candidate "+ candidateName + dot ;
- 			System.out.println(message);
- 			//call google notification method
- 		    break;
  		case "candidate_moved":
- 			String fromStage = payload.details.fromStage.name;
- 			String toStage = payload.details.toStage.name;
- 			message = "Candidate of position " + payload.getOffer().title + " moved from " + fromStage + " to " + toStage + dot ;
- 			System.out.println(message);
- 			//call google notification method
- 			initiateExternalIntegration(payload);
+ 			try {
+ 			   subscribeCandidateInLemlist(payload);
+ 			}catch(JsonProcessingException | UnsupportedEncodingException | URISyntaxException exception) {
+ 				System.out.println(exception);
+ 			}
  		    break;
  	    default:
  		   //donothing
@@ -73,16 +50,15 @@ public class RecruiteeIntegrationServiceImpl implements RecruiteeIntegrationServ
 }
 	
 	/**
-	 * sendNotification is used to send notification to chat room.
+	 * subscribeCandidateInLemlist is used create user in lemList.
 	 * 
-	 * @param eventType
 	 * @param payload
 	 * @return 
 	 * @throws JsonProcessingException 
 	 * @throws URISyntaxException 
 	 * @throws UnsupportedEncodingException 
 	 */
-	private CompletableFuture<String> initiateExternalIntegration(Payload payload) throws JsonProcessingException, URISyntaxException, UnsupportedEncodingException {		
+	private CompletableFuture<String> subscribeCandidateInLemlist(Payload payload) throws JsonProcessingException, URISyntaxException, UnsupportedEncodingException {		
 	        Map<String, String> campaginMap = new HashMap<String, String>()
 	        {{
 	             put("Ideas2IT: DOJ in 1 month", "cam_Ko8yJWBrtLgqeFEod");
@@ -125,31 +101,6 @@ public class RecruiteeIntegrationServiceImpl implements RecruiteeIntegrationServ
 	        			  .sendAsync(request, BodyHandlers.ofString())
 	        			  .thenApply(HttpResponse::body);		   	   
 	           }
-	           //IAssistant Integration
-	           if(pipeLine.equals("Hired")) {
-	        	   String url = "https://timesheet.ideas2it.com/api/on-boarding/recruitee";
-	        	   URI uri = new URI(url);       
-	        	   ObjectMapper objectMapper = new ObjectMapper();
-	        	   //RequestBody
-	        	   Map<String,String>requestMap=new HashMap<>();
-	        	   requestMap.put("name", payload.getCandidate().name);
-	        	   requestMap.put("email", email);
-	        	   String requestBody = objectMapper
-	        			   .writerWithDefaultPrettyPrinter()
-	        			   .writeValueAsString(requestMap);
-
-	        	   // Create HTTP request object
-	        	   HttpRequest request = HttpRequest.newBuilder()
-	        			   .uri(uri)
-	                	.POST((BodyPublishers.ofString(requestBody)))
-	                	.header("Content-Type", "application/json")
-	                	.header("accept", "application/json")
-	                	.build();
-	        	   // Send HTTP request
-	        	   return  HttpClient.newHttpClient()
-	        			   .sendAsync(request, BodyHandlers.ofString())
-	        			   .thenApply(HttpResponse::body);	   
-	      	 }
 	           	   return null;
 	        }
 	     

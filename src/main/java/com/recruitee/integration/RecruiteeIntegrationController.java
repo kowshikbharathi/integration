@@ -3,7 +3,6 @@ package com.recruitee.integration;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.concurrent.CompletableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
